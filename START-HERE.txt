@@ -1,0 +1,19 @@
+ccms-gateway  (one address for the whole system: http://localhost:8080)
+No database. It only forwards requests, so start the other repos first (Identity 3001, Catalogue 3003).
+
+In this folder, one command at a time:
+   npm install
+   npm start
+
+Then open http://localhost:8080
+   /login, /accounts            -> ccms-identity-service
+   /, /offices, /services, /calendar, /public/...   -> ccms-catalogue-service
+   /logs                        -> ccms-logs-service (not part of this delivery)
+
+The gateway also checks that a token is present and valid on every /api route that is not public
+(sign-in, public service browse, health). It does not check roles; each service does that. It reads the
+public keys from Identity the first time it needs them, so start Identity first.
+
+For gateway use, open the .env.local of Identity and Catalogue and make these empty (nothing after the =), then restart them:
+   Identity:   NEXT_PUBLIC_CATALOGUE_APP_URL=
+   Catalogue:  NEXT_PUBLIC_IDENTITY_APP_URL=
