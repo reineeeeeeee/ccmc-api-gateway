@@ -1,0 +1,29 @@
+{
+  "name": "ccms-api-gateway",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "CCMS API gateway: the one public entry point for the browser. Next.js Route Handlers that check the token and forward to Identity, Core and Logs.",
+  "ccms": {
+    "service": "api-gateway",
+    "port": 8080
+  },
+  "scripts": {
+    "dev": "next dev -p 8080",
+    "build": "next build",
+    "start": "next start -p 8080",
+    "lint": "eslint .",
+    "test": "node --test \"test/**/*.test.js\"",
+    "ci": "npm run lint && npm test && npm run build"
+  },
+  "dependencies": {
+    "jose": "^6.2.0",
+    "next": "^16.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^16.3.0"
+  }
+}
