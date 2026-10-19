@@ -8,6 +8,7 @@ export const SERVICES = {
   catalogue: { env: 'CORE_URL', fallback: 'http://127.0.0.1:3003' },
   calendar: { env: 'CORE_URL', fallback: 'http://127.0.0.1:3003' },
   logs: { env: 'LOGS_URL', fallback: 'http://127.0.0.1:3002' },
+  operations: { env: 'OPERATIONS_URL', fallback: 'http://127.0.0.1:3004' },
 };
 
 // Backend-only writes (service-to-service, protected by the shared key). Browsers never need them,
@@ -28,6 +29,7 @@ export const PUBLIC_API = {
   catalogue: ['/api/public/', '/api/health'],
   calendar: ['/api/health'],
   logs: ['/api/health'],
+  operations: ['/api/health'],
 };
 
 export function isPublicApi(name, path) {
