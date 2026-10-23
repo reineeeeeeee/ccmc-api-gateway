@@ -11,6 +11,7 @@ ccms-api-gateway/
 │   │   ├── catalogue/[...path]/route.js
 │   │   ├── calendar/[...path]/route.js
 │   │   ├── logs/[...path]/route.js
+│   │   ├── operations/[...path]/route.js
 │   │   └── health/route.js
 │   └── lib/
 │       ├── routes.js        # which name goes to which service; public routes; blocked routes
@@ -25,7 +26,8 @@ ccms-api-gateway/
 
 1. Starts or keeps the correlation id (`x-correlation-id`) and returns it.
 2. Refuses plain HTTP when HTTPS is required (on Vercel it is; locally it is off).
-3. Maps `/api/{name}/…` to a service: `identity` → Identity, `catalogue` and `calendar` → Core, `logs` → Logs. Anything else is a 404.
+3. Maps `/api/{name}/…` to a service: `identity` → Identity, `catalogue` and `calendar` → Core, `logs` → Logs, and
+   `operations` → Operations. Anything else is a 404.
 4. Refuses ambiguous paths (`..`, `//`, `%2e`, `%2f`, `\`) and **never forwards `/api/jobs/*`**: scheduled jobs are called by Vercel
    Cron directly on each service, not through the gateway.
 5. On every route that is not public, requires a valid token (signature, expiry, issuer, audience). **It does no role or office
@@ -37,6 +39,8 @@ ccms-api-gateway/
    503 `AUTH_UNAVAILABLE` (keys unreachable), 504 `SERVICE_TIMEOUT`.
 
 `GET /api/logs/audit-events` (the read-only audit viewer) passes through; every other method on that path is blocked.
+`GET /api/operations/health` is public. Every other Operations route requires a valid token, and
+`/api/operations/jobs/*` is never exposed through the Gateway.
 
 ## Run it
 
@@ -51,7 +55,7 @@ npm test
 
 | Variable | Meaning |
 | --- | --- |
-| `IDENTITY_URL`, `CORE_URL`, `LOGS_URL` | where each service runs (origin only, no `/api`) |
+| `IDENTITY_URL`, `CORE_URL`, `LOGS_URL`, `OPERATIONS_URL` | where each service runs (origin only, no `/api`) |
 | `IDENTITY_JWKS_URL`, `JWT_ISSUER`, `JWT_AUDIENCE`, `VERIFY_TOKENS` | token check (defaults: `IDENTITY_URL/api/auth/jwks`, `ccms-identity`, `ccms`, on) |
 | `REQUIRE_TLS`, `TRUST_PROXY` | HTTPS only; on by default on Vercel |
 | `PROXY_TIMEOUT_SECONDS` | wait for a service before answering 504 (default 25) |
