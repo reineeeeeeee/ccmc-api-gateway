@@ -32,6 +32,21 @@ export const PUBLIC_API = {
   operations: ['/api/health'],
 };
 
+// EB6 / EB7: the one machine-to-machine route. FMS pulls the calendar snapshot with a machine key
+// (Authorization: Bearer ccms_mk_<ref>.<secret>), which is not a user token, so the user-token check
+// is skipped for exactly this path, only for GET/HEAD, and only when the key has the machine-key
+// prefix. The gateway does NOT validate the key: Core does, and answers the same 401 for every failure.
+// Every other route, method or kind of credential still needs a valid user token.
+export const MACHINE_KEY_API = { calendar: ['/api/declarations'] };
+export const MACHINE_KEY_PREFIX = 'ccms_mk_';
+
+export function isMachineKeyRequest(name, path, method, token) {
+  if (!READ_METHODS.has(String(method).toUpperCase())) return false;
+  if (typeof token !== 'string' || !token.startsWith(MACHINE_KEY_PREFIX)) return false;
+  const pathname = path.split('?')[0].replace(/\/+$/, '');
+  return (MACHINE_KEY_API[name] ?? []).includes(pathname);
+}
+
 export function isPublicApi(name, path) {
   const pathname = path.split('?')[0].replace(/\/+$/, '');
   return (PUBLIC_API[name] ?? []).some((p) => (p.endsWith('/') ? pathname.startsWith(p) : pathname === p));
