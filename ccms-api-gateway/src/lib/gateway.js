@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { bearerToken } from './auth.js';
-import { isPublicApi, resolveRoute, serviceTargets } from './routes.js';
+import { isMachineKeyRequest, isPublicApi, resolveRoute, serviceTargets } from './routes.js';
 
 const CORRELATION = 'x-correlation-id';
 const SAFE_ID = /^[A-Za-z0-9._-]{8,128}$/;
@@ -52,13 +52,16 @@ export function createGateway({ targets = serviceTargets(), requireTls = false, 
     if (tokenCheck && !isPublicApi(route.name, route.path)) {
       const token = bearerToken({ authorization: request.headers.get('authorization') ?? undefined });
       if (!token) return errorResponse(401, 'UNAUTHORIZED', 'Authentication required', correlationId);
-      let result;
-      try {
-        result = await tokenCheck(token);
-      } catch {
-        result = { ok: false, status: 503, code: 'AUTH_UNAVAILABLE', message: 'Cannot verify your session right now, try again' };
+      // A machine key on the calendar pull route is checked by Core, not here (see routes.js).
+      if (!isMachineKeyRequest(route.name, route.path, request.method, token)) {
+        let result;
+        try {
+          result = await tokenCheck(token);
+        } catch {
+          result = { ok: false, status: 503, code: 'AUTH_UNAVAILABLE', message: 'Cannot verify your session right now, try again' };
+        }
+        if (!result.ok) return errorResponse(result.status, result.code, result.message, correlationId);
       }
-      if (!result.ok) return errorResponse(result.status, result.code, result.message, correlationId);
     }
 
     // ---- forward ----
