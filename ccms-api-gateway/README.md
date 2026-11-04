@@ -38,6 +38,12 @@ ccms-api-gateway/
 7. Answers in the standard error format: 404 `ROUTE_NOT_FOUND`, 401 `UNAUTHORIZED` / `INVALID_TOKEN`, 502 `SERVICE_UNAVAILABLE`,
    503 `AUTH_UNAVAILABLE` (keys unreachable), 504 `SERVICE_TIMEOUT`.
 
+**Machine key route (EB6, EB7).** `GET /api/calendar/declarations` (Core's calendar snapshot for FMS) is called by a machine, not a
+person, with `Authorization: Bearer ccms_mk_<ref>.<secret>`. For exactly that path, only for GET/HEAD, and only when the credential
+starts with `ccms_mk_`, the gateway skips the user-token check and forwards the request unchanged; Core validates the key and
+answers the same 401 for every failure. A machine key on any other path or method, or a user token on this path, is checked the
+normal way. The gateway does not look at the key itself.
+
 `GET /api/logs/audit-events` (the read-only audit viewer) passes through; every other method on that path is blocked.
 `GET /api/operations/health` is public. Every other Operations route requires a valid token, and
 `/api/operations/jobs/*` is never exposed through the Gateway.
